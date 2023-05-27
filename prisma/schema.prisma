@@ -28,10 +28,37 @@ model User{
 
   role Role
   
+  departments Department[]
+  token Token[]
 }
 
 enum Role{
   USER
   ADMIN
   SUPERADMIN
+}
+
+model Department{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  office String
+  state String
+
+  users User[]
+}
+
+model Token{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type String
+  isValid Boolean @default(true)
+
+  expiresAt DateTime
+
+  userId Int 
+  user User @relation(fields: [userId], references: [id])
 }
