@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
+model Client{
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -73,7 +73,7 @@ model Department{
   office String
   state String
 
-  users User[]
+  users Client[]
 }
 
 model Token{
@@ -87,7 +87,7 @@ model Token{
   expiresAt DateTime
 
   userId Int 
-  user User @relation(fields: [userId], references: [id])
+  user Client @relation(fields: [userId], references: [id])
 }
 
 model Saving{
@@ -111,10 +111,10 @@ model Saving{
   
   work Work?
   address Address?
-
-  loan Loan[]
   nextOfKin NextOfKin?
   family Family?
+
+  loan Loan[]
 }
 
 model Loan{
@@ -125,7 +125,7 @@ model Loan{
 
   account String @unique
   email String @unique
-  phone String? @unique
+  phone String?
   
   firstname String
   lastname String
@@ -151,7 +151,7 @@ model Work{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  employeeId String? @unique
+  employeeId String?
 
   occupation String
   company String?
@@ -197,7 +197,7 @@ model Transaction{
   type TransactionType
 
   transactedBy Int
-  user User @relation(fields: [transactedBy], references: [id])
+  user Client @relation(fields: [transactedBy], references: [id])
 }
 
 model NextOfKin{
@@ -260,5 +260,5 @@ model LoanDetail{
   loan Loan @relation(fields: [loanId], references: [id])
 
   grantedBy Int
-  user User @relation(fields: [grantedBy], references: [id])
+  user Client @relation(fields: [grantedBy], references: [id])
 }
