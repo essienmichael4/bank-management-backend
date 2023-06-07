@@ -41,8 +41,8 @@ router.post("/user", async (req, res) =>{
 router.put("/user/:id", authenticateToken,async (req, res) => {
 
     try{
-        const id = req.params
-        const account = req.body
+        const {id} = req.params
+        const {account} = req.body
         const user:UpdateUser = req.body
         const dbUser = await findUserByEmail(user.email!)
         if(!dbUser){
@@ -64,8 +64,8 @@ router.put("/user/:id", authenticateToken,async (req, res) => {
 
 router.put("user/password/:id", authenticateToken, async (req,res)=>{
     try{
-        const id = req.params
-        const account = req.body
+        const {id} = req.params
+        const {account} = req.body
         const user:PasswordRequest = req.body
 
         const dbUser = await findUserById(Number(id))

@@ -12,7 +12,7 @@ app.use(express.json())
 app.use("/api/v1", authRoute)
 app.use("/api/v1", userRoute)
 app.use("/api/v1/saving", savingRoute)
-app.use("/api/v1", loanRoute)
+app.use("/api/v1/loan", loanRoute)
 
 app.listen("3000", ()=>{
     console.log("Server running on port 3000");    

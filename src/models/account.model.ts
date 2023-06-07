@@ -67,3 +67,39 @@ export interface UpdateSavingAccount{
     family?:Family
 
 }
+
+export interface LoanAccount{
+    account: string,
+    email: string,
+    phone?: string,
+    firstname: string,
+    lastname: string,
+    othernames?: string,
+    dateOfBirth: string,
+    purpose?: string,
+    status: string,
+    gender: string,
+    sponsor?: string,
+    balance?: string
+
+    work?:Work,
+    address?:Address,
+    guarantor:Guarantor[],
+    loanDetail:LoanDetail
+}
+
+interface Guarantor{
+    savingId: string,
+    amount: string
+}
+
+interface LoanDetail{
+    amount: string,
+    interest: string,
+    appliedAt: string,
+    dueAt: string,
+    modeOfPayment: string,
+
+    state: string,
+    grantedBy?: string
+}

@@ -59,6 +59,13 @@ enum LoanStatus{
   PENDING
 }
 
+enum LoanState{
+  NEW
+  GRANTED
+  UNGRANTED
+  CLOSED
+}
+
 enum TransactionType{
   DEPOSITE
   DEBIT
@@ -114,7 +121,8 @@ model Saving{
   nextOfKin NextOfKin?
   family Family?
 
-  loan Loan[]
+  sponsoring Loan[]
+  guaranted Guarantor[]
 }
 
 model Loan{
@@ -235,10 +243,12 @@ model Guarantor{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String
   amount Float
 
-  loanId Int @unique
+  savingId Int
+  saving Saving @relation(fields: [savingId], references: [id])
+
+  loanId Int
   loan Loan @relation(fields: [loanId], references: [id])
 
 }
@@ -254,11 +264,11 @@ model LoanDetail{
   dueAt DateTime
   modeOfPayment String
 
-  state LoanStatus
+  state LoanState
 
   loanId Int @unique
   loan Loan @relation(fields: [loanId], references: [id])
 
-  grantedBy Int
-  user Client @relation(fields: [grantedBy], references: [id])
+  grantedBy Int?
+  user Client? @relation(fields: [grantedBy], references: [id])
 }
