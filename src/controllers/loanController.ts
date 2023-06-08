@@ -14,9 +14,11 @@ export const createLoan = (loan:LoanAccount)=>{
         othernames: loan.othernames,
         dateOfBirth: new Date(loan.dateOfBirth),
         purpose: loan.purpose,
+        balance: Number(loan.balance),
         gender: Gender[loan.gender as keyof typeof Gender],
         status: LoanStatus[loan.status as keyof typeof LoanStatus],
-        sponser: Number(loan.sponsor),
+        // sponser:  Number(loan.sponsor),
+        saving:{connect:{id: Number(loan.sponsor)}},
         
         work:{
             create:{
@@ -54,7 +56,7 @@ export const createLoan = (loan:LoanAccount)=>{
                 dueAt: new Date(loan.loanDetail.dueAt),
                 modeOfPayment: loan.loanDetail.modeOfPayment,
                 state: LoanState[loan.loanDetail.state as keyof typeof LoanState],
-                grantedBy: Number(loan.loanDetail.grantedBy)
+                user: {connect:{ id: Number(loan.loanDetail.grantedBy)}}
             }
         }
     }})
@@ -65,7 +67,7 @@ export const getLoanByAccountNumber = (account:string)=>{
 }
 
 export const getLoanByEmail = (email:string)=>{
-    return prisma.loan.findUnique({where: {email}})
+    return prisma.loan.findMany({where: {email}})
 }
 
 export const getLoanById = (id:string)=>{

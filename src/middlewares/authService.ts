@@ -8,7 +8,6 @@ dotenv.config()
 
 export async function authenticateToken(req:AuthRequest, res:Response, next:NextFunction) {
     let token = req.headers["authorization"]?.split(" ")[1]
-    
     if(!token) return res.sendStatus(401)    
 
     try{
@@ -19,11 +18,12 @@ export async function authenticateToken(req:AuthRequest, res:Response, next:Next
         if(!user){
             return res.status(401).json({error: "Api token invalid, Please login and try again"})
         }
-
-        req.account = user!
+        
+        req.tokenAccount = user
+        
     }catch(e){
         return res.sendStatus(401)
     }
-
+    
     next()
 }

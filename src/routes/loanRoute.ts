@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authenticateToken } from "../middlewares/authService";
 import { LoanAccount } from "../models/account.model";
 import { createLoan, getAllLoans, getLoanById, updateLoan } from "../controllers/loanController";
+import { AuthRequest } from "../models/authRequest.model";
 
 const router = Router()
 
@@ -27,45 +28,45 @@ router.get("/:id",authenticateToken, async (req,res)=>{
 })
 
 // Create Loan
-router.post("/",authenticateToken, async (req, res) => {
-    try{
-        const {account} = req.body
+router.post("/",authenticateToken, async (req:AuthRequest, res) => {
+    // try{
+        const account = req.tokenAccount
         const loan:LoanAccount = req.body
 
-        if(loan.loanDetail.state != "NEW" && account.role == "USER"){
+        if(loan.loanDetail.state != "NEW" && account!.role == "USER"){
             return res.status(401).json(
                 {error: `User is not permitted to make ${loan.loanDetail.state} loan request`}
             )
         }
 
-        if(loan.loanDetail.state != "NEW" && account.role != "USER"){
-            loan.loanDetail.grantedBy = account.id
+        if(loan.loanDetail.state != "NEW" && account!.role != "USER"){
+            loan.loanDetail.grantedBy = String(account!.id)
         }
 
-        const result = createLoan(loan)
+        const result = await createLoan(loan)
         res.send({result, message: "Loan created successfully"})
-    }catch(err){
-        res.status(401).json({error: "Server error"})
-    }
+    // }catch(err){
+    //     res.status(401).json({error: "Server error"})
+    // }
 })
 
 // Update Loan
-router.put("/:id", authenticateToken,async (req, res) => {
-    try{
+router.put("/:id", authenticateToken,async (req:AuthRequest, res) => {
+    // try{
         const {id} = req.params
-        const account = req.params
+        const account = req.tokenAccount
         const loanUpdate:LoanAccount = req.body
 
-        if(account.role == "User"){
+        if(account!.role == "USER"){
             return res.status(401).json({error: "User is not permitted to make updates"})
         }
 
-        const result = updateLoan(id, loanUpdate)
+        const result = await updateLoan(id, loanUpdate)
         res.send({result, message: "Loan updated successfully"})
 
-    }catch(err){
-        res.status(401).json({error: "Server Error"})
-    }
+    // }catch(err){
+    //     res.status(401).json({error: "Server Error"})
+    // }
 })
 
 

@@ -80,7 +80,7 @@ export interface LoanAccount{
     status: string,
     gender: string,
     sponsor?: string,
-    balance?: string
+    balance?: string,
 
     work?:Work,
     address?:Address,

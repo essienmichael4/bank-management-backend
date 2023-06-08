@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { createSavingsAccount, getAccountById, getAllAccounts, updateSavingsAccount } from "../controllers/savingController";
 import { SavingAccount, UpdateSavingAccount } from "../models/account.model";
+import { authenticateToken } from "../middlewares/authService";
+import { AuthRequest } from "../models/authRequest.model";
 
 const router = Router()
 
-router.get("/account/:id", async (req, res)=>{
+router.get("/account/:id", authenticateToken, async (req, res)=>{
     try{
         const {id} = req.params
         const dbAccount = await getAccountById(id)
@@ -21,7 +23,7 @@ router.get("/account/:id", async (req, res)=>{
 
 })
 
-router.get("/account", async(req, res)=>{
+router.get("/account", authenticateToken, async(req, res)=>{
     try{
         const dbAccounts = await getAllAccounts()
         res.send(dbAccounts)
@@ -30,7 +32,7 @@ router.get("/account", async(req, res)=>{
     }
 })
 
-router.post("/account", async (req,res)=>{
+router.post("/account", authenticateToken, async (req,res)=>{
     try{
         const accountRequest:SavingAccount = req.body
 
@@ -42,9 +44,13 @@ router.post("/account", async (req,res)=>{
     
 })
 
-router.put("/account/:id", async (req, res)=>{
+router.put("/account/:id", authenticateToken, async (req:AuthRequest, res)=>{
     try{
         const {id} = req.params
+        const tokenAccount = req.tokenAccount
+        if(tokenAccount?.role == "USER"){
+            return res.status(401).json({error: "User is not allowed to make updates"})
+        }
         const accountRequest:UpdateSavingAccount = req.body
 
         const result = await updateSavingsAccount(id,accountRequest)

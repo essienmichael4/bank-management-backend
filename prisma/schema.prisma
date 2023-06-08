@@ -132,7 +132,7 @@ model Loan{
   balance Float @default(0)
 
   account String @unique
-  email String @unique
+  email String
   phone String?
   
   firstname String
