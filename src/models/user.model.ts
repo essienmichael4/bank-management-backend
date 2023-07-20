@@ -17,7 +17,7 @@ export interface User{
 interface Department{
     office:string,
     state:string,
-    users:User[]
+    users?:User[]
 }
 
 interface Token{

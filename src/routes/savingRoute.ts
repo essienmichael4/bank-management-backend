@@ -32,6 +32,15 @@ router.get("/account", authenticateToken, async(req, res)=>{
     }
 })
 
+router.get("/account", authenticateToken, async(req, res)=>{
+    try{
+        const dbAccounts = await getAllAccounts()
+        res.send(dbAccounts)
+    }catch(e){
+        res.status(401).json({error: "e.error"})
+    }
+})
+
 router.post("/account", authenticateToken, async (req,res)=>{
     try{
         const accountRequest:SavingAccount = req.body

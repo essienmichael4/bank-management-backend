@@ -38,7 +38,7 @@ router.post("/user", async (req, res) =>{
     }
 })
 
-router.put("/user/:id", authenticateToken,async (req, res) => {
+router.put("/user/:id", authenticateToken, async (req, res) => {
 
     try{
         const {id} = req.params

@@ -15,17 +15,26 @@ export const createUser = (user:User)=>{
             employeeId:user.employeeId,
             password:user.password,
             status:user.status,
-            role: Role[user.role as keyof typeof Role]
-        }
+            phone: user.phone,
+            role: Role[user.role as keyof typeof Role],
+            departments: {
+                connectOrCreate: user!.departments?.map((dept) =>{
+                    return {
+                        where: {office: dept.office},
+                        create: { office: dept.office, state: dept.state },
+                    }
+                })  
+            }
+        }, select:{firstname: true,departments: true}
     })
 }
 
 export const findUserByEmail = (email:string)=>{
-    return prisma.client.findUnique({where:{email}})
+    return prisma.client.findUnique({where:{email}, include: {departments:true}})
 }
 
 export const findUserByUsername = (username:string)=>{
-    return prisma.client.findUnique({where:{username}})
+    return prisma.client.findUnique({where:{username}, include: {departments:true}})
 } 
 
 export const findUserById = (id:number)=> {
