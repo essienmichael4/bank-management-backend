@@ -9,6 +9,7 @@ export interface SavingAccount{
     registration: string,
     accountStatus: string,
     gender: string,
+    card?: string,
 
     work?:Work,
     address?:Address,
@@ -25,12 +26,13 @@ interface Work{
 }
 
 interface Address{
-residentialAddress: string,
-homeTown: string,
-city: string,
-region: string,
-country: string,
-nationality: string
+    residentialAddress: string,
+    homeTown: string,
+    city: string,
+    region: string,
+    country: string,
+    nationality: string,
+    digital?:string
 }
 
 interface NextOfKin{
@@ -60,6 +62,7 @@ export interface UpdateSavingAccount{
     registration?: string,
     accountStatus?: string,
     gender?: string,
+    card?:string,
 
     work?:Work,
     address?:Address,
@@ -81,6 +84,7 @@ export interface LoanAccount{
     gender: string,
     sponsor?: string,
     balance?: string,
+    card?:string,
 
     work?:Work,
     address?:Address,
@@ -96,6 +100,7 @@ interface Guarantor{
 interface LoanDetail{
     amount: string,
     interest: string,
+    interestPercent:string
     appliedAt: string,
     dueAt: string,
     modeOfPayment: string,

@@ -18,5 +18,11 @@ export const getLoanInterestOverview = ()=>{
     }})
 }
 
+export const getLoans = ()=>{
+    return prisma.loanDetail.findMany({select: {
+        amount:true
+    }})
+}
+
 
 

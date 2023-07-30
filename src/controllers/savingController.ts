@@ -10,7 +10,8 @@ export const getAccountById = (id:string) => {
             nextOfKin: true,
             work: true,
             address:true,
-            family:true
+            family:true,
+            transactions:true
         }
     })
 }
@@ -27,7 +28,7 @@ export const getAllAccounts= () => {
 }
 
 export const createSavingsAccount = (account:SavingAccount)=>{
-    const dateOfBirth = new Date(account.dateOfBirth)
+    const dateOfBirth = new Date(account.dateOfBirth)    
     
     return prisma.saving.create({data:{
             account:account.account,
@@ -40,12 +41,14 @@ export const createSavingsAccount = (account:SavingAccount)=>{
             registration: Number(account.registration),
             status: AccountStatus[account.accountStatus as keyof typeof  AccountStatus],
             gender: Gender[account.gender as keyof typeof Gender],
+            card: account.card,
 
             work:{create:{
                 employeeId: account.work?.employeeId,
                 occupation: account.work!.occupation,
                 company: account.work?.company,
                 location: account.work?.location,
+                
             }},
 
             address: {create:{
@@ -54,7 +57,8 @@ export const createSavingsAccount = (account:SavingAccount)=>{
                 city: account.address!.city,
                 region: account.address!.region,
                 country: account.address!.country,
-                nationality: account.address!.nationality
+                nationality: account.address!.nationality,
+                digital: account.address?.digital,
             }},
 
             nextOfKin:{create:{
@@ -70,8 +74,9 @@ export const createSavingsAccount = (account:SavingAccount)=>{
             family:{create:{
                 maritalStatus: account.family!.maritalStatus,
                 spouseName: account.family?.spouseName,
-                noOfChildren: Number(account.family!.noOfChildren)
+                noOfChildren: Number(account.family?.noOfChildren)
             }}
+            
         },include:{
             family: true,
             nextOfKin:true,
@@ -133,5 +138,19 @@ export const updateSavingsAccount = (id:string,account:UpdateSavingAccount)=>{
             address:true,
             work:true
         }
+    })
+}
+
+export const countAccounts = ()=>{
+    return prisma.saving.aggregate({
+        _count:{id:true}
+    })
+}
+
+export const getLastAccountNumber = ()=>{
+    return prisma.saving.findMany({
+        select: {account:true},
+        orderBy: {id: "desc"},
+        take: 1
     })
 }

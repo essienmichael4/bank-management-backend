@@ -52,6 +52,7 @@ export const createLoan = (loan:LoanAccount)=>{
             create:{
                 amount: Number(loan.loanDetail.amount),
                 interest: Number(loan.loanDetail.interest),
+                interestPercent: Number(loan.loanDetail.interestPercent),
                 appliedAt: new Date(loan.loanDetail.appliedAt),
                 dueAt: new Date(loan.loanDetail.dueAt),
                 modeOfPayment: loan.loanDetail.modeOfPayment,
@@ -71,11 +72,21 @@ export const getLoanByEmail = (email:string)=>{
 }
 
 export const getLoanById = (id:string)=>{
-    return prisma.loan.findUnique({where: {id: Number(id)}})
+    return prisma.loan.findUnique({
+        where: {id: Number(id)},
+        include: {
+            work:true,
+            address: true,
+            saving:true,
+            guarantor: {include:{saving:true}},
+            loanDetail: true,
+            transactions:true
+        }
+    })
 }
 
 export const getAllLoans = ()=>{
-    return prisma.loan.findMany()
+    return prisma.loan.findMany({include: {loanDetail:true}})
 }
 
 export const getAllDueLoans = ()=>{
@@ -138,6 +149,7 @@ export const updateLoan = (id:string, loan:LoanAccount)=>{
             update:{
                 amount: Number(loan.loanDetail.amount),
                 interest: Number(loan.loanDetail.interest),
+                interestPercent: Number(loan.loanDetail.interestPercent),
                 appliedAt: new Date(loan.loanDetail.appliedAt),
                 dueAt: new Date(loan.loanDetail.dueAt),
                 modeOfPayment: loan.loanDetail.modeOfPayment,
@@ -146,4 +158,18 @@ export const updateLoan = (id:string, loan:LoanAccount)=>{
             }
         }
     }})
+}
+
+export const countLoans = ()=>{
+    return prisma.loan.aggregate({
+        _count:{id:true}
+    })
+}
+
+export const getLastAccountNumber = ()=>{
+    return prisma.loan.findMany({
+        select: {account:true},
+        orderBy: {id: "desc"},
+        take: 1
+    })
 }

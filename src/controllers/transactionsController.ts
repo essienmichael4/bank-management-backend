@@ -6,6 +6,11 @@ export const getDashboardTransactions= ()=>{
         take:20,
         orderBy:{
             id: "desc"
+        },
+        include:{ 
+            savingAccount: true,
+            account: true,
+            user: true
         }
     })
 }
@@ -17,9 +22,22 @@ export const countTransactions = ()=>{
 }
 
 export const getAllTransactions = () => {
-    return prisma.transaction.findMany({include:{savingAccount:true,account:true}})
+    return prisma.transaction.findMany({
+        include:{
+            savingAccount:true,
+            account:true,
+            user: true
+        }
+    })
 }
 
 export const getSingleTransaction = (id:string) =>{
-    return prisma.transaction.findUnique({where :{id:Number(id)},include:{savingAccount:true,account:true}})
+    return prisma.transaction.findUnique({
+        where :{id:Number(id)},
+        include:{
+            savingAccount:true,
+            account:true,
+            user: true
+        }
+    })
 }

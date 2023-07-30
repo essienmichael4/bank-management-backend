@@ -187,6 +187,7 @@ model Address{
   region String
   country String
   nationality String
+  digital String?
   
   savingId Int? @unique
   savingAccount Saving? @relation(fields: [savingId], references: [id])
@@ -270,6 +271,7 @@ model LoanDetail{
   updatedAt DateTime @updatedAt
 
   amount Float
+  interestPercent Float
   interest Float
   appliedAt DateTime
   dueAt DateTime

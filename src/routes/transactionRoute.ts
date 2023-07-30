@@ -1,15 +1,23 @@
 import { Router } from "express";
 import { authenticateToken } from "../middlewares/authService";
-import { getAllTransactions, getDashboardTransactions, getSingleTransaction } from "../controllers/transactionsController";
+import { countTransactions, getAllTransactions, getDashboardTransactions, getSingleTransaction } from "../controllers/transactionsController";
 
 const router = Router()
 
 router.get("/transactions/dashboard", async (req,res)=>{
-    const result = await getDashboardTransactions()
+    const transactions = await getDashboardTransactions()
+    const count = await countTransactions()
+
+    const result = {transactions, count}
+
     res.send(result)
 })
 router.get("/transactions", async (req,res)=>{
-    const result = await getAllTransactions()
+    const transactions = await getAllTransactions()
+    const count = await countTransactions()
+
+    const result = {transactions, count}
+
     res.send(result)
 })
 router.get("/transactions/:id", async (req,res)=>{
