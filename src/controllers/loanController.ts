@@ -5,6 +5,20 @@ import { LoanAccount } from '../models/account.model'
 const prisma = new PrismaClient()
 
 export const createLoan = (loan:LoanAccount)=>{
+    //loan balance calculation
+    const loanAmount = Number(loan.loanDetail.amount)
+    const loanInterest = Number(loan.loanDetail.interestPercent)
+    const interest = loanAmount * (loanInterest / 100)
+    const balance = loanAmount + interest
+
+
+    loan.balance = balance.toString()
+    loan.loanDetail.interest = interest.toString()
+
+    //Guarantors amount calculation
+    const numberOfGuarantors = loan.guarantor.length
+    const amountGuaranted = loanAmount / numberOfGuarantors
+
     return prisma.loan.create({data:{
         account:loan.account,
         email: loan.email,
@@ -16,8 +30,7 @@ export const createLoan = (loan:LoanAccount)=>{
         purpose: loan.purpose,
         balance: Number(loan.balance),
         gender: Gender[loan.gender as keyof typeof Gender],
-        status: LoanStatus[loan.status as keyof typeof LoanStatus],
-        // sponser:  Number(loan.sponsor),
+        status: LoanStatus[loan.status as keyof typeof LoanStatus],        
         saving:{connect:{id: Number(loan.sponsor)}},
         
         work:{
@@ -39,14 +52,13 @@ export const createLoan = (loan:LoanAccount)=>{
             }
         },
         guarantor:{
-            createMany:{
-                data: loan.guarantor.map((g)=>{
+            create: loan.guarantor.map((g)=>{
                     return {
-                        amount:Number(g.amount),
-                        savingId:Number(g.savingId)
+                        amount:Number(amountGuaranted),
+                        saving:{
+                            connect: {id: Number(g.savingId)}}
                     }
-                })
-            }
+                })            
         },
         loanDetail:{
             create:{
@@ -57,7 +69,7 @@ export const createLoan = (loan:LoanAccount)=>{
                 dueAt: new Date(loan.loanDetail.dueAt),
                 modeOfPayment: loan.loanDetail.modeOfPayment,
                 state: LoanState[loan.loanDetail.state as keyof typeof LoanState],
-                user: {connect:{ id: Number(loan.loanDetail.grantedBy)}}
+                // user: {connect:{ id: Number(loan.loanDetail?.grantedBy)}}
             }
         }
     }})

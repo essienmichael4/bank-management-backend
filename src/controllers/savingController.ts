@@ -16,6 +16,10 @@ export const getAccountById = (id:string) => {
     })
 }
 
+export const getAccountByAccountNumber = (account:string) => {
+    return prisma.saving.findUnique({where: { account}})
+}
+
 export const getAllAccounts= () => {
     return prisma.saving.findMany({ 
         include :{ 

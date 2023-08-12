@@ -255,7 +255,7 @@ model Guarantor{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  amount Float
+  amount Float?
 
   savingId Int
   saving Saving @relation(fields: [savingId], references: [id])
