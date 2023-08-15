@@ -2,8 +2,8 @@ import { Router } from "express";
 import { authenticateToken } from "../middlewares/authService";
 import { countTransactions, createLoanTransaction, createSavingTransaction, getAllTransactions, getDashboardTransactions, getLastReceipt, getSingleTransaction } from "../controllers/transactionsController";
 import { TransactionRequest } from "../models/transactionRequest.model";
-import { getLoanByAccountNumber } from "../controllers/loanController";
-import { getAccountByAccountNumber } from "../controllers/savingController";
+import { getAllLoans, getLoanByAccountNumber } from "../controllers/loanController";
+import { getAccountByAccountNumber, getAllAccounts } from "../controllers/savingController";
 import { AuthRequest } from "../models/authRequest.model";
 
 const router = Router()
@@ -16,6 +16,16 @@ router.get("/transactions/dashboard", async (req,res)=>{
 
     res.send(result)
 })
+
+router.get("/transactions/accounts", async (req,res)=>{
+    
+    const savingAccount = await getAllAccounts()
+    const loanAccount = await getAllLoans()
+    const allAccounts = [...savingAccount, ...loanAccount]
+
+    res.send(allAccounts)
+})
+
 router.get("/transactions", async (req,res)=>{
     const transactions = await getAllTransactions()
     const count = await countTransactions()
@@ -37,7 +47,7 @@ router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
 
     const response: any = await getLastReceipt()
 
-    let receipt = response ? Number(response!.receipt) + 1 : 10001
+    let receipt = response.receipt ? Number(response!.receipt) + 1 : 10001
 
     if(transaction.transactionType == "LOAN_PAYMENT"){
         const loanAccount = await getLoanByAccountNumber(transaction.accountNumber)

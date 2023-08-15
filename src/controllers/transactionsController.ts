@@ -70,7 +70,7 @@ export const createLoanTransaction = (loanAccount:Loan, transaction:TransactionR
 
 export const createSavingTransaction = (savingAccount:Saving, transaction:TransactionRequest, savingBalance:number, transactedBy:number, receipt:string) =>{
     return prisma.saving.update({
-        where:{account: ""},
+        where:{account: transaction.accountNumber},
         data:{
             balance: savingBalance,
             transactions: {
