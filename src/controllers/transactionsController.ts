@@ -32,6 +32,7 @@ export const getAllTransactions = () => {
     })
 }
 
+
 export const getSingleTransaction = (id:string) =>{
     return prisma.transaction.findUnique({
         where :{id:Number(id)},

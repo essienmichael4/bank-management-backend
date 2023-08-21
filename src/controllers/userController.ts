@@ -42,7 +42,7 @@ export const findUserById = (id:number)=> {
 }
 
 export const findAllUsers = ()=>{
-    return prisma.client.findMany()
+    return prisma.client.findMany({include: {departments:true}})
 }
 
 export const updateUser = (user:UpdateUser)=>{

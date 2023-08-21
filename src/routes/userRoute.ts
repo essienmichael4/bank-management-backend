@@ -2,7 +2,7 @@ import { Router } from "express";
 import { PasswordRequest, UpdateUser, User } from "../models/user.model";
 import bcrypt from 'bcrypt'
 import { authenticateToken } from "../middlewares/authService";
-import { createUser, findUserByEmail, findUserById, findUserByUsername, updatePassword, updateUser } from "../controllers/userController";
+import { createUser, findAllUsers, findUserByEmail, findUserById, findUserByUsername, updatePassword, updateUser } from "../controllers/userController";
 
 
 const router = Router()
@@ -13,27 +13,40 @@ router.get("/user/:email", authenticateToken, async (req, res) => {
     res.send(user)
 })
 
-router.post("/user", async (req, res) =>{
+router.get("/users", authenticateToken, async (req, res) => {
+    const user = await findAllUsers()
+    res.send(user)
+})
+
+router.post("/user", authenticateToken, async (req, res) =>{
     
     try {
         const user:User = req.body
+        console.log(user);
+        console.log(user);
+        
         const hashPassword = await bcrypt.hash(user.password, 10)
         user.password = hashPassword
 
+        console.log(user.email);
         const checkUniqueEmail = await findUserByEmail(user.email)        
         if (checkUniqueEmail){
             return res.status(400).json({error: "Email already exists."})
         }
 
+        console.log(user.username);
+        
         const checkUniqueUsername = await findUserByUsername(user.username)
         if (checkUniqueUsername){
             return res.status(400).json({error: "Username has already been taken."})
         }
 
         const result = await createUser(user)
-        res.status(201).send(result)
+        res.status(201).send({result, message:"User added successfully"})
         
     } catch (e) {
+        console.log(e);
+        
         res.status(400).json({error: "User could not be created"})
     }
 })
