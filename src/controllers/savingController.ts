@@ -11,7 +11,10 @@ export const getAccountById = (id:string) => {
             work: true,
             address:true,
             family:true,
-            transactions:true
+            transactions:{
+                include:{user:true}
+            },
+            
         }
     })
 }

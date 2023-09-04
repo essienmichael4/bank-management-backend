@@ -53,6 +53,7 @@ enum AccountStatus{
 }
 
 enum LoanStatus{
+  NOT_LOANED
   DUE
   OVERDUE
   PAID

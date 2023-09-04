@@ -107,7 +107,3 @@ router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
 })
 
 export default router
-
-function getAllDepartments() {
-    throw new Error("Function not implemented.");
-}

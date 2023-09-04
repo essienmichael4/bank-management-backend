@@ -1,4 +1,4 @@
-import { Gender, PrismaClient } from '@prisma/client'
+import { Gender, Loan, LoanDetail, PrismaClient } from '@prisma/client'
 import { LoanStatus , LoanState} from '@prisma/client'
 import { LoanAccount } from '../models/account.model'
 
@@ -76,7 +76,19 @@ export const createLoan = (loan:LoanAccount)=>{
 }
 
 export const getLoanByAccountNumber = (account:string)=>{
-    return prisma.loan.findUnique({where: {account}})
+    return prisma.loan.findUnique({
+        where: {account},
+        include: {
+            work:true,
+            address: true,
+            saving:true,
+            guarantor: {include:{saving:true}},
+            loanDetail: true,
+            transactions:{
+                include: {user:true}
+            }
+        }
+    })
 }
 
 export const getLoanByEmail = (email:string)=>{
@@ -92,7 +104,9 @@ export const getLoanById = (id:string)=>{
             saving:true,
             guarantor: {include:{saving:true}},
             loanDetail: true,
-            transactions:true
+            transactions:{
+                include: {user:true}
+            }
         }
     })
 }
@@ -183,5 +197,50 @@ export const getLastAccountNumber = ()=>{
         select: {account:true},
         orderBy: {id: "desc"},
         take: 1
+    })
+}
+export const grantLoan = (account:number, userid:number)=>{
+    return prisma.loanDetail.update({
+        where: {id: account},
+        data: {
+            grantedBy: Number(userid),
+            state: "GRANTED"
+        }
+    })
+}
+export const closeLoanAccount = (account:string, userid:number)=>{
+    console.log("Hi");
+    
+    return prisma.loan.update({
+        where: {account: account},
+        data: {
+            balance: 0,
+            status: "NOT_LOANED",
+            loanDetail: {
+                update:{
+                    state: "CLOSED",
+                    amount: 0,
+                    interest: 0,
+                    interestPercent: 0,
+                    grantedBy: Number(userid),
+                }
+            }
+        }
+    })
+}
+
+export const loanedLoan = (account:string, userid:number)=>{
+
+    return prisma.loan.update({
+        where: {account: account},
+        data: {
+            status: "PENDING" ,
+            loanDetail: { 
+                update: {
+                    grantedBy: Number(userid),
+                    state: "GRANTED"
+                }
+            }
+        }
     })
 }
