@@ -244,3 +244,35 @@ export const loanedLoan = (account:string, userid:number)=>{
         }
     })
 }
+
+export const autoUpdateOfLoans = async ()=>{
+    const loans = await prisma.loan.findMany({
+        where:{status: {not: "PAID" || "NOT_LOANED"}},
+        include:{loanDetail: {select:{
+            dueAt: true
+        }}}
+    })
+
+    const updatedLoans = loans.map(loan =>{
+        let now = new Date()
+        let tomorrow = new Date(now.setDate(now.getDate()+1))
+
+        if (loan?.loanDetail!.dueAt >= now && loan?.loanDetail!.dueAt < tomorrow){
+            loan.status = "DUE"
+            return loan
+        }
+
+        if(loan?.loanDetail!.dueAt > tomorrow){
+            loan.status = "OVERDUE"
+            return loan
+        }
+    })
+
+    updatedLoans.map(async loan => {
+        await prisma.loan.update({where: {id: loan!.id}, data: {status: loan?.status}})
+    })
+    // prisma.loan.update(updatedLoans.map(loan =>{
+    //     return  {where: { id: loan!.id}, data:{ status: loan!.status }}
+    // }))
+
+}
