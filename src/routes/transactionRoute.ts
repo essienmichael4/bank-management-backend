@@ -5,7 +5,7 @@ import { TransactionRequest } from "../models/transactionRequest.model";
 import { getAllLoans, getLoanByAccountNumber } from "../controllers/loanController";
 import { getAccountByAccountNumber, getAllAccounts } from "../controllers/savingController";
 import { AuthRequest } from "../models/authRequest.model";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient()
 
 const router = Router()
@@ -37,11 +37,8 @@ router.get("/transactions", async (req,res)=>{
     res.send(result)
 })
 
-router.get("/departments", async (req, res) => {
-    console.log("Hi");
-    
+router.get("/departments", async (req, res) => {    
     const departments = await prisma.department.findMany({select:{office:true}})
-    // console.log(departments.forEach(department=> department.office))
     res.send(departments)
 })
 
