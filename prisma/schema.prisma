@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
+model Client{
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -29,7 +29,10 @@ model User{
   role Role
   
   departments Department[]
-  token Token[]
+  tokens Token[]
+
+  transactions Transaction[]
+  loanDetails LoanDetail[]
 }
 
 enum Role{
@@ -38,15 +41,47 @@ enum Role{
   SUPERADMIN
 }
 
+enum Gender{
+  MALE
+  FEMALE
+}
+
+enum AccountStatus{
+  ACTIVE
+  DISABLED
+  CLOSED
+}
+
+enum LoanStatus{
+  NOT_LOANED
+  DUE
+  OVERDUE
+  PAID
+  PENDING
+}
+
+enum LoanState{
+  NEW
+  GRANTED
+  UNGRANTED
+  CLOSED
+}
+
+enum TransactionType{
+  DEPOSITE
+  DEBIT
+  LOAN_PAYMENT
+}
+
 model Department{
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  office String
+  office String @unique
   state String
 
-  users User[]
+  users Client[]
 }
 
 model Token{
@@ -60,5 +95,194 @@ model Token{
   expiresAt DateTime
 
   userId Int 
-  user User @relation(fields: [userId], references: [id])
+  user Client @relation(fields: [userId], references: [id])
+}
+
+model Saving{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  balance Float @default(0)
+
+  account String @unique
+  email String @unique
+  phone String? @unique
+  
+  firstname String
+  lastname String
+  othernames String?
+  dateOfBirth DateTime
+  registration Float? @default(0)
+  card String?
+
+  status AccountStatus
+  gender Gender
+  
+  work Work?
+  address Address?
+  nextOfKin NextOfKin?
+  family Family?
+
+  sponsoring Loan[]
+  guaranted Guarantor[]
+  transactions Transaction[]
+}
+
+model Loan{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  balance Float @default(0)
+
+  account String @unique
+  email String
+  phone String?
+  card String?
+  
+  firstname String
+  lastname String
+  othernames String?
+  dateOfBirth DateTime
+  purpose String?
+
+  status LoanStatus
+  gender Gender
+
+  sponser Int? 
+  saving Saving? @relation(fields: [sponser], references: [id])
+  
+  work Work?
+  address Address?
+  guarantor Guarantor[]
+  transactions Transaction[]
+
+  loanDetail LoanDetail?
+}
+
+model Work{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employeeId String?
+
+  occupation String
+  company String?
+  location String?
+
+  savingId Int? @unique
+  savingAccount Saving? @relation(fields: [savingId], references: [id])
+
+  loanId Int? @unique
+  account Loan? @relation(fields: [loanId], references: [id])
+}
+
+model Address{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  residentialAddress String
+  homeTown String
+  city String
+  region String
+  country String
+  nationality String
+  digital String?
+  
+  savingId Int? @unique
+  savingAccount Saving? @relation(fields: [savingId], references: [id])
+
+  loanId Int? @unique
+  account Loan? @relation(fields: [loanId], references: [id])
+}
+
+model Transaction{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amount Float
+  previousAmount Float
+  balanceAmount Float
+  description String
+  receipt String?
+  cheque String?
+
+  type TransactionType
+
+  savingId Int? @unique
+  savingAccount Saving? @relation(fields: [savingId], references: [id])
+
+  loanId Int? @unique
+  account Loan? @relation(fields: [loanId], references: [id])
+
+  transactedBy Int
+  user Client @relation(fields: [transactedBy], references: [id])
+}
+
+model NextOfKin{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  firstname String
+  lastname String
+  othernames String?
+  relation String
+  phone String?
+  occupation String
+  residentialAddress String
+
+  accountId Int @unique
+  saving Saving @relation(fields: [accountId], references: [id])
+}
+
+model Family{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  maritalStatus String
+  spouseName String?
+  noOfChildren Int @default(0)
+
+  savingId Int @unique
+  saving Saving @relation(fields: [savingId], references: [id])
+}
+
+model Guarantor{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amount Float?
+
+  savingId Int
+  saving Saving @relation(fields: [savingId], references: [id])
+
+  loanId Int
+  loan Loan @relation(fields: [loanId], references: [id])
+
+}
+
+model LoanDetail{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amount Float
+  interestPercent Float
+  interest Float
+  appliedAt DateTime
+  dueAt DateTime
+  modeOfPayment String
+
+  state LoanState
+
+  loanId Int @unique
+  loan Loan @relation(fields: [loanId], references: [id])
+
+  grantedBy Int?
+  user Client? @relation(fields: [grantedBy], references: [id])
 }
