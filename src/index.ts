@@ -24,12 +24,14 @@ app.use("/api/v1/loan", loanRoute)
 app.use("/api/v1/overview", overviewRoute)
 app.use("/api/v1/", transactionRoute)
 
-cron.schedule("* * * 25 * *", ()=>{
-    console.log("------------------------")
-    console.log("Running task")
-    autoUpdateOfLoans()
-})
+
 
 app.listen(port, ()=>{
-    console.log(`Server running on port ${port}`);    
+    console.log(`Server running on port ${port}`);   
+    
+    cron.schedule("* * * * * *", ()=>{
+        console.log("------------------------")
+        console.log("Running task")
+        autoUpdateOfLoans()
+    })
 })

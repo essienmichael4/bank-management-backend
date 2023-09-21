@@ -2,8 +2,8 @@ import { Router } from "express";
 import { authenticateToken } from "../middlewares/authService";
 import { countTransactions, createLoanTransaction, createSavingTransaction, getAllTransactions, getDashboardTransactions, getLastReceipt, getSingleTransaction } from "../controllers/transactionsController";
 import { TransactionRequest } from "../models/transactionRequest.model";
-import { getAllLoans, getLoanByAccountNumber } from "../controllers/loanController";
-import { getAccountByAccountNumber, getAllAccounts } from "../controllers/savingController";
+import { getAllLoansForTransactions, getLoanByAccountNumber } from "../controllers/loanController";
+import { getAccountByAccountNumber, getAllAccountsForTransactions } from "../controllers/savingController";
 import { AuthRequest } from "../models/authRequest.model";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient()
@@ -21,8 +21,8 @@ router.get("/transactions/dashboard", async (req,res)=>{
 
 router.get("/transactions/accounts", async (req,res)=>{
     
-    const savingAccount = await getAllAccounts()
-    const loanAccount = await getAllLoans()
+    const savingAccount = await getAllAccountsForTransactions()
+    const loanAccount = await getAllLoansForTransactions()
     const allAccounts = [...savingAccount, ...loanAccount]
 
     res.send(allAccounts)

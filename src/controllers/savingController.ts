@@ -14,7 +14,6 @@ export const getAccountById = (id:string) => {
             transactions:{
                 include:{user:true}
             },
-            
         }
     })
 }
@@ -25,6 +24,18 @@ export const getAccountByAccountNumber = (account:string) => {
 
 export const getAllAccounts= () => {
     return prisma.saving.findMany({ 
+        include :{ 
+            nextOfKin: true,
+            work: true,
+            address:true,
+            family:true
+        }
+    })
+}
+
+export const getAllAccountsForTransactions= () => {
+    return prisma.saving.findMany({ 
+        where:{status:{not: "CLOSED" || "DISABLED"}},
         include :{ 
             nextOfKin: true,
             work: true,

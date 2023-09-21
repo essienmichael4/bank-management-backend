@@ -114,6 +114,11 @@ export const getLoanById = (id:string)=>{
 export const getAllLoans = ()=>{
     return prisma.loan.findMany({include: {loanDetail:true}})
 }
+export const getAllLoansForTransactions = ()=>{
+    return prisma.loan.findMany({
+        where:{status:{not: "PAID" || "NOT_LOANED"}},
+        include: {loanDetail:true}})
+}
 
 export const getAllDueLoans = ()=>{
     return prisma.loan.findMany({where:{
@@ -247,28 +252,40 @@ export const loanedLoan = (account:string, userid:number)=>{
 
 export const autoUpdateOfLoans = async ()=>{
     const loans = await prisma.loan.findMany({
-        where:{status: {not: "PAID" || "NOT_LOANED"}},
+        where:{status: {not: "PAID" || "NOT_LOANED" || "OVERDUE"}},
         include:{loanDetail: {select:{
             dueAt: true
         }}}
     })
 
     const updatedLoans = loans.map(loan =>{
-        let now = new Date()
-        let tomorrow = new Date(now.setDate(now.getDate()+1))
+        let now = new Date().getTime()
+        // let tomorrow:Date = new Date(now.setDate(now.getDate()+2))
+        let loanDuration = loan?.loanDetail!.dueAt.getTime()
+        let timeDifference = now - loanDuration
 
-        if (loan?.loanDetail!.dueAt >= now && loan?.loanDetail!.dueAt < tomorrow){
+        const dayInMilliseconds = 24 * 60 * 60 * 1000
+
+        let dayDifference = Math.round(timeDifference/dayInMilliseconds)
+
+        // console.log(dayDifference);
+        if (dayDifference > 0 && dayDifference < 2 ){
+            
             loan.status = "DUE"
             return loan
         }
 
-        if(loan?.loanDetail!.dueAt > tomorrow){
+        if(dayDifference > 1){
+
             loan.status = "OVERDUE"
             return loan
         }
     })
-
-    updatedLoans.map(async loan => {
+    
+    updatedLoans.forEach(async loan => {
+        if(!loan){
+            return
+        }        
         await prisma.loan.update({where: {id: loan!.id}, data: {status: loan?.status}})
     })
     // prisma.loan.update(updatedLoans.map(loan =>{
