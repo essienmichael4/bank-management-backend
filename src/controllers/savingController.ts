@@ -58,7 +58,7 @@ export const createSavingsAccount = (account:SavingAccount)=>{
             dateOfBirth: dateOfBirth,
             registration: Number(account.registration),
             status: AccountStatus[account.accountStatus as keyof typeof  AccountStatus],
-            gender: Gender[account.gender as keyof typeof Gender],
+            gender: Gender[account.gender.toUpperCase() as keyof typeof Gender],
             card: account.card,
 
             work:{create:{
@@ -170,5 +170,39 @@ export const getLastAccountNumber = ()=>{
         select: {account:true},
         orderBy: {id: "desc"},
         take: 1
+    })
+}
+
+export const closeSavingAccount = (account:string)=>{
+    console.log("Hi");
+    
+    return prisma.saving.update({
+        where: {account: account},
+        data: {
+            balance: 0,
+            status: "CLOSED",
+        }
+    })
+}
+
+export const disableSavingAccount = (account:string)=>{
+    console.log("Hi");
+    
+    return prisma.saving.update({
+        where: {account: account},
+        data: {
+            status: "DISABLED",
+        }
+    })
+}
+
+export const activateSavingAccount = (account:string)=>{
+    console.log("Hi");
+    
+    return prisma.saving.update({
+        where: {account: account},
+        data: {
+            status: "ACTIVE",
+        }
     })
 }

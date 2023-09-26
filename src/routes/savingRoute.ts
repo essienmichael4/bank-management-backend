@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { countAccounts, createSavingsAccount, getAccountById, getAllAccounts, getLastAccountNumber, updateSavingsAccount } from "../controllers/savingController";
+import { activateSavingAccount, closeSavingAccount, countAccounts, createSavingsAccount, disableSavingAccount, getAccountByAccountNumber, getAccountById, getAllAccounts, getLastAccountNumber, updateSavingsAccount } from "../controllers/savingController";
 import { SavingAccount, UpdateSavingAccount } from "../models/account.model";
 import { authenticateToken } from "../middlewares/authService";
 import { AuthRequest } from "../models/authRequest.model";
@@ -66,8 +66,6 @@ router.post("/account", authenticateToken, async (req,res)=>{
     }
 })
 
-
-
 router.put("/account/:id", authenticateToken, async (req:AuthRequest, res)=>{
     try{
         const {id} = req.params
@@ -84,5 +82,76 @@ router.put("/account/:id", authenticateToken, async (req:AuthRequest, res)=>{
     }
 })
 
+router.put("/close/:account", authenticateToken, async (req:AuthRequest, res) => {
+    try{
+        const {account} = req.params
+        const grantedBy = req.tokenAccount
+        
+        
+        if(grantedBy!.role == "USER"){
+            return res.status(401).json({error: "User is not permitted to close accounts"})
+        }
+
+        const savingAccount = await getAccountByAccountNumber(account); 
+
+        if(!savingAccount){
+            res.status(404).json({error: "Account does not exist"})
+        }
+
+        const granted = await closeSavingAccount(savingAccount!.account)
+        res.send({granted, message: "Account cloased successfully"})
+
+    }catch(err){
+        res.status(401).json({error: "Server Error"})
+    }
+})
+
+router.put("/disable/:account", authenticateToken, async (req:AuthRequest, res) => {
+    try{
+        const {account} = req.params
+        const grantedBy = req.tokenAccount
+        
+        
+        if(grantedBy!.role == "USER"){
+            return res.status(401).json({error: "User is not permitted to close accounts"})
+        }
+
+        const savingAccount = await getAccountByAccountNumber(account); 
+
+        if(!savingAccount){
+            res.status(404).json({error: "Account does not exist"})
+        }
+
+        const granted = await disableSavingAccount(savingAccount!.account)
+        res.send({granted, message: "Account disabled successfully"})
+
+    }catch(err){
+        res.status(401).json({error: "Server Error"})
+    }
+})
+
+router.put("/activate/:account", authenticateToken, async (req:AuthRequest, res) => {
+    try{
+        const {account} = req.params
+        const grantedBy = req.tokenAccount
+        
+        
+        if(grantedBy!.role == "USER"){
+            return res.status(401).json({error: "User is not permitted to close accounts"})
+        }
+
+        const savingAccount = await getAccountByAccountNumber(account); 
+
+        if(!savingAccount){
+            res.status(404).json({error: "Account does not exist"})
+        }
+
+        const granted = await activateSavingAccount(savingAccount!.account)
+        res.send({granted, message: "Account activated successfully"})
+
+    }catch(err){
+        res.status(401).json({error: "Server Error"})
+    }
+})
 
 export default router

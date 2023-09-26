@@ -1,4 +1,4 @@
-import { Gender, Loan, LoanDetail, PrismaClient } from '@prisma/client'
+import { Gender, PrismaClient } from '@prisma/client'
 import { LoanStatus , LoanState} from '@prisma/client'
 import { LoanAccount } from '../models/account.model'
 
@@ -29,7 +29,7 @@ export const createLoan = (loan:LoanAccount)=>{
         dateOfBirth: new Date(loan.dateOfBirth),
         purpose: loan.purpose,
         balance: Number(loan.balance),
-        gender: Gender[loan.gender as keyof typeof Gender],
+        gender: Gender[loan.gender.toUpperCase() as keyof typeof Gender],
         status: LoanStatus[loan.status as keyof typeof LoanStatus],        
         saving:{connect:{id: Number(loan.sponsor)}},
         
@@ -114,6 +114,7 @@ export const getLoanById = (id:string)=>{
 export const getAllLoans = ()=>{
     return prisma.loan.findMany({include: {loanDetail:true}})
 }
+
 export const getAllLoansForTransactions = ()=>{
     return prisma.loan.findMany({
         where:{status:{not: "PAID" || "NOT_LOANED"}},

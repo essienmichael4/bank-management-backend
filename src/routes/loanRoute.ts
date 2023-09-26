@@ -56,6 +56,7 @@ router.post("/account",authenticateToken, async (req:AuthRequest, res) => {
         }
 
         if(loan.loanDetail.state != "NEW" && account!.role != "USER"){
+            loan.loanDetail.state = "GRANTED"
             loan.loanDetail.grantedBy = String(account!.id)
         }
 
