@@ -38,7 +38,7 @@ export const findUserByUsername = (username:string)=>{
 } 
 
 export const findUserById = (id:number)=> {
-    return prisma.client.findUnique({where:{id}})
+    return prisma.client.findUnique({where:{id}, include: {departments:true}})  
 }
 
 export const findAllUsers = ()=>{
@@ -64,3 +64,15 @@ export const updatePassword = (id:string, password:string) =>{
         password
     }})
 } 
+
+export const disableUser = (id:number)=>{
+    return prisma.client.update({where:{id: Number(id)},data:{
+            status: "DISABLED",
+    }})
+}
+
+export const activateUser = (id:number)=>{
+    return prisma.client.update({where:{id: Number(id)},data:{
+            status: "ACTIVE",
+    }})
+}

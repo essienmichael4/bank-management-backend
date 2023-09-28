@@ -122,8 +122,8 @@ router.put("/disable/:account", authenticateToken, async (req:AuthRequest, res) 
             res.status(404).json({error: "Account does not exist"})
         }
 
-        const granted = await disableSavingAccount(savingAccount!.account)
-        res.send({granted, message: "Account disabled successfully"})
+        const disabled = await disableSavingAccount(savingAccount!.account)
+        res.send({disabled, message: "Account disabled successfully"})
 
     }catch(err){
         res.status(401).json({error: "Server Error"})
