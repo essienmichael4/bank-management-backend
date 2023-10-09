@@ -211,10 +211,10 @@ model Transaction{
 
   type TransactionType
 
-  savingId Int? @unique
+  savingId Int? 
   savingAccount Saving? @relation(fields: [savingId], references: [id])
 
-  loanId Int? @unique
+  loanId Int?
   account Loan? @relation(fields: [loanId], references: [id])
 
   transactedBy Int

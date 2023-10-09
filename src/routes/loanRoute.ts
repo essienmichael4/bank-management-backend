@@ -1,8 +1,17 @@
 import { Router } from "express";
+import nodemailer from 'nodemailer';
 import { authenticateToken } from "../middlewares/authService";
 import { LoanAccount } from "../models/account.model";
 import { closeLoanAccount, countLoans, createLoan, getAllLoans, getLastAccountNumber, getLoanByAccountNumber, getLoanById, grantLoan, loanedLoan, updateLoan } from "../controllers/loanController";
 import { AuthRequest } from "../models/authRequest.model";
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_SENDER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+});
 
 const router = Router()
 
@@ -45,7 +54,7 @@ router.get("/account/:id",authenticateToken, async (req,res)=>{
 
 // Create Loan
 router.post("/account",authenticateToken, async (req:AuthRequest, res) => {
-    // try{
+    try{
         const account = req.tokenAccount
         const loan:LoanAccount = req.body
 
@@ -61,10 +70,24 @@ router.post("/account",authenticateToken, async (req:AuthRequest, res) => {
         }
 
         const result = await createLoan(loan)
+        const { to, subject, text } = {
+            to: result!.email,
+            subject: "BMS Loan Account Created",
+            text: `Loan Account created with loan number: ${result.account} and loan amount of ${result.balance}`
+        }
+
+        const mailOptions = {
+            from: process.env.EMAIL_SENDER,
+            to,
+            subject,
+            text,
+          };
+      
+        await transporter.sendMail(mailOptions);
         res.send({result, message: "Loan created successfully"})
-    // }catch(err){
-    //     res.status(401).json({error: "Server error"})
-    // }
+    }catch(err){
+        res.status(401).json({error: "Server error"})
+    }
 })
 
 // Update Loan

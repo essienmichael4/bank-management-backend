@@ -1,10 +1,19 @@
 import { Router } from "express";
+import nodemailer from 'nodemailer';
 import { activateSavingAccount, closeSavingAccount, countAccounts, createSavingsAccount, disableSavingAccount, getAccountByAccountNumber, getAccountById, getAllAccounts, getLastAccountNumber, updateSavingsAccount } from "../controllers/savingController";
 import { SavingAccount, UpdateSavingAccount } from "../models/account.model";
 import { authenticateToken } from "../middlewares/authService";
 import { AuthRequest } from "../models/authRequest.model";
 
 const router = Router()
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_SENDER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+});
 
 router.get("/account/:id", authenticateToken, async (req, res)=>{
     try{
@@ -54,10 +63,25 @@ router.get("/account", authenticateToken, async(req, res)=>{
 })
 
 router.post("/account", authenticateToken, async (req,res)=>{
+    
     try{
         const accountRequest:SavingAccount = req.body
         
         const result = await createSavingsAccount(accountRequest)
+        const { to, subject, text } = {
+            to: result!.email,
+            subject: "BMS Account Created",
+            text: `User Account created with account number: ${result.account}. Thank you for banking with us.`
+        }
+
+        const mailOptions = {
+            from: process.env.EMAIL_SENDER,
+            to,
+            subject,
+            text,
+          };
+      
+        await transporter.sendMail(mailOptions);
         res.send(result)
     }catch(e){
         console.log(e);

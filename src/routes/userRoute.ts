@@ -29,19 +29,14 @@ router.post("/user", authenticateToken, async (req, res) =>{
     
     try {
         const user:User = req.body
-        console.log(user);
-        console.log(user);
         
         const hashPassword = await bcrypt.hash(user.password, 10)
         user.password = hashPassword
 
-        console.log(user.email);
         const checkUniqueEmail = await findUserByEmail(user.email)        
         if (checkUniqueEmail){
             return res.status(400).json({error: "Email already exists."})
         }
-
-        console.log(user.username);
         
         const checkUniqueUsername = await findUserByUsername(user.username)
         if (checkUniqueUsername){
@@ -114,8 +109,6 @@ router.post("/user/change-password", authenticateToken, async (req:AuthRequest,r
         }
 
         if(isAdmin){
-            console.log("Im here");
-            
             const adminUser = await findUserById(Number(user.id))
             const passVerify = await bcrypt.compare(user.previousPassword, adminUser!.password)
             if(!passVerify){

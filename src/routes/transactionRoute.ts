@@ -1,4 +1,5 @@
 import { Router } from "express";
+import nodemailer from 'nodemailer';
 import { authenticateToken } from "../middlewares/authService";
 import { countTransactions, createLoanTransaction, createSavingTransaction, getAllTransactions, getDashboardTransactions, getLastReceipt, getSingleTransaction } from "../controllers/transactionsController";
 import { TransactionRequest } from "../models/transactionRequest.model";
@@ -7,6 +8,14 @@ import { getAccountByAccountNumber, getAllAccountsForTransactions } from "../con
 import { AuthRequest } from "../models/authRequest.model";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient()
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_SENDER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+});
 
 const router = Router()
 
@@ -72,7 +81,21 @@ router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
         }
 
         const result = await createLoanTransaction(loanAccount, transaction, loanBalance, account!.id, receipt.toString())
+        const { to, subject, text } = {
+            to: result!.email,
+            subject: "BMS Account Transaction",
+            text: `Loan Payment of GH¢ ${transaction.transactedAmount} has been paid to loan number: ${result.account}. Loan balance left is GH¢ ${result.balance}.
+            Thank you for banking with us.`
+        }
 
+        const mailOptions = {
+            from: process.env.EMAIL_SENDER,
+            to,
+            subject,
+            text,
+          };
+      
+        await transporter.sendMail(mailOptions);
         res.send({result, message: `Transaction successful with receipt ${receipt}`})
 
     }else{
@@ -99,6 +122,22 @@ router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
 
         const result = await createSavingTransaction(savingAccount, transaction, savingBalance, account!.id, receipt.toString())
         
+        const { to, subject, text } = {
+            to: result!.email,
+            subject: "BMS Account Transaction",
+            text: `${transaction.transactionType} transaction of GH¢ ${transaction.transactedAmount} has been made with number: ${result.account}. Account balance left is GH¢ ${result.balance}.
+            Thank you for banking with us.`
+        }
+
+        const mailOptions = {
+            from: process.env.EMAIL_SENDER,
+            to,
+            subject,
+            text,
+          };
+      
+        await transporter.sendMail(mailOptions);
+
         res.send({result, message: `Transaction successful with receipt ${receipt}`})
     }
 })
