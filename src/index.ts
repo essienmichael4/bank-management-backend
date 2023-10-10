@@ -29,9 +29,9 @@ app.use("/api/v1/", transactionRoute)
 app.listen(port, ()=>{
     console.log(`Server running on port ${port}`);   
     
-    cron.schedule("* * * * * *", ()=>{
-        console.log("------------------------")
-        console.log("Running task")
-        autoUpdateOfLoans()
-    })
+    // cron.schedule("* * * * * *", ()=>{
+    //     console.log("------------------------")
+    //     console.log("Running task")
+    //     autoUpdateOfLoans()
+    // })
 })

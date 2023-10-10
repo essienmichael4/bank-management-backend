@@ -52,93 +52,102 @@ router.get("/departments", async (req, res) => {
 })
 
 router.get("/transactions/:id", async (req,res)=>{
-    const {id} = req.params
-    const result = await getSingleTransaction(id)
-    res.send(result)
+    try{
+        const {id} = req.params
+        const result = await getSingleTransaction(id)
+        res.send(result)
+    }catch(err){
+        res.status(401).json({error: "Server error"})
+    }
 })
 
 router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
-    const account = req.tokenAccount
-    const transaction:TransactionRequest = req.body
+    try{
+        const account = req.tokenAccount
+        const transaction:TransactionRequest = req.body
 
-    const response: any = await getLastReceipt()
+        const response: any = await getLastReceipt()
 
-    let receipt = response.receipt ? Number(response!.receipt) + 1 : 10001
+        let receipt = response.receipt ? Number(response!.receipt) + 1 : 10001
 
-    if(transaction.transactionType == "LOAN_PAYMENT"){
-        const loanAccount = await getLoanByAccountNumber(transaction.accountNumber)
-        
-        if(!loanAccount){
-            return res.status(401).json(
-                {error: `Loan with account number ${transaction.accountNumber} was not found. Please try again?`}
-            )
-        }
-
-        const loanBalance = Number(loanAccount!.balance) - Number(transaction.transactedAmount)
-
-        if(loanBalance <= 0){
-            loanAccount.status = "PAID"
-        }
-
-        const result = await createLoanTransaction(loanAccount, transaction, loanBalance, account!.id, receipt.toString())
-        const { to, subject, text } = {
-            to: result!.email,
-            subject: "BMS Account Transaction",
-            text: `Loan Payment of GH¢ ${transaction.transactedAmount} has been paid to loan number: ${result.account}. Loan balance left is GH¢ ${result.balance}.
-            Thank you for banking with us.`
-        }
-
-        const mailOptions = {
-            from: process.env.EMAIL_SENDER,
-            to,
-            subject,
-            text,
-          };
-      
-        await transporter.sendMail(mailOptions);
-        res.send({result, message: `Transaction successful with receipt ${receipt}`})
-
-    }else{
-        const savingAccount = await getAccountByAccountNumber(transaction.accountNumber)
-
-        if(!savingAccount){
-            return res.status(401).json(
-                {error: `Saving with account number ${transaction.accountNumber} was not found. Please try again?`}
-            )
-        }
-
-        let savingBalance = 0
-        
-        if(transaction.transactionType == "DEPOSITE"){
-            savingBalance = Number(savingAccount.balance) + Number(transaction.transactedAmount)
-        }else{
-            savingBalance = Number(savingAccount.balance) - Number(transaction.transactedAmount)
-            if(savingBalance < 0){
+        if(transaction.transactionType == "LOAN_PAYMENT"){
+            const loanAccount = await getLoanByAccountNumber(transaction.accountNumber)
+            
+            if(!loanAccount){
                 return res.status(401).json(
-                    {error: `The debit amount exceeds the balance  in the account`}
+                    {error: `Loan with account number ${transaction.accountNumber} was not found. Please try again?`}
                 )
             }
-        }
 
-        const result = await createSavingTransaction(savingAccount, transaction, savingBalance, account!.id, receipt.toString())
+            const loanBalance = Number(loanAccount!.balance) - Number(transaction.transactedAmount)
+
+            if(loanBalance <= 0){
+                loanAccount.status = "PAID"
+            }
+
+            const result = await createLoanTransaction(loanAccount, transaction, loanBalance, account!.id, receipt.toString())
+            const { to, subject, text } = {
+                to: result!.email,
+                subject: "BMS Account Transaction",
+                text: `Loan Payment of GH¢ ${transaction.transactedAmount} has been paid to loan number: ${result.account}. Loan balance left is GH¢ ${result.balance}.
+                Thank you for banking with us.`
+            }
+
+            const mailOptions = {
+                from: process.env.EMAIL_SENDER,
+                to,
+                subject,
+                text,
+            };
         
-        const { to, subject, text } = {
-            to: result!.email,
-            subject: "BMS Account Transaction",
-            text: `${transaction.transactionType} transaction of GH¢ ${transaction.transactedAmount} has been made with number: ${result.account}. Account balance left is GH¢ ${result.balance}.
-            Thank you for banking with us.`
+            // await transporter.sendMail(mailOptions);
+            res.send({result, message: `Transaction successful with receipt ${receipt}`})
+
+        }else{
+            const savingAccount = await getAccountByAccountNumber(transaction.accountNumber)
+
+            if(!savingAccount){
+                return res.status(401).json(
+                    {error: `Saving with account number ${transaction.accountNumber} was not found. Please try again?`}
+                )
+            }
+
+            let savingBalance = 0
+            
+            if(transaction.transactionType == "DEPOSITE"){
+                savingBalance = Number(savingAccount.balance) + Number(transaction.transactedAmount)
+            }else{
+                savingBalance = Number(savingAccount.balance) - Number(transaction.transactedAmount)
+                if(savingBalance < 0){
+                    return res.status(401).json(
+                        {error: `The debit amount exceeds the balance  in the account`}
+                    )
+                }
+            }
+            
+
+            const result = await createSavingTransaction(savingAccount, transaction, savingBalance, account!.id, receipt.toString())
+            
+            const { to, subject, text } = {
+                to: result!.email,
+                subject: "BMS Account Transaction",
+                text: `${transaction.transactionType} transaction of GH¢ ${transaction.transactedAmount} has been made with number: ${result.account}. Account balance left is GH¢ ${result.balance}.
+                Thank you for banking with us.`
+            }
+
+            const mailOptions = {
+                from: process.env.EMAIL_SENDER,
+                to,
+                subject,
+                text,
+            };
+        
+            await transporter.sendMail(mailOptions);
+
+            res.send({result, message: `Transaction successful with receipt ${receipt}`})
         }
-
-        const mailOptions = {
-            from: process.env.EMAIL_SENDER,
-            to,
-            subject,
-            text,
-          };
-      
-        await transporter.sendMail(mailOptions);
-
-        res.send({result, message: `Transaction successful with receipt ${receipt}`})
+    }catch(err){
+        res.status(401).json({error: "Server error"})
     }
 })
 

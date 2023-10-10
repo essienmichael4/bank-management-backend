@@ -82,7 +82,7 @@ export const createSavingTransaction = (savingAccount:Saving, transaction:Transa
                     description: "",
                     receipt: receipt,
                     cheque: "",
-                    type: TransactionType[transaction.transactionType as keyof typeof  TransactionType],
+                    type: TransactionType[transaction.transactionType.toUpperCase() as keyof typeof  TransactionType],
                     user: {
                         connect: {
                             id: Number(transactedBy)
