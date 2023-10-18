@@ -67,11 +67,11 @@ router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
         const transaction:TransactionRequest = req.body
 
         const response: any = await getLastReceipt()
-
-        let receipt = response.receipt ? Number(response!.receipt) + 1 : 10001
+        
+        let receipt = response[0].receipt ? Number(response[0].receipt) + 1 : 10001
 
         if(transaction.transactionType == "LOAN_PAYMENT"){
-            const loanAccount = await getLoanByAccountNumber(transaction.accountNumber)
+            let loanAccount = await getLoanByAccountNumber(transaction.accountNumber)
             
             if(!loanAccount){
                 return res.status(401).json(
@@ -79,29 +79,56 @@ router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
                 )
             }
 
-            const loanBalance = Number(loanAccount!.balance) - Number(transaction.transactedAmount)
+            let refund = 0
 
-            if(loanBalance <= 0){
+            let loanBalance = Number(loanAccount!.balance) - Number(transaction.transactedAmount)
+
+            if(loanBalance < 0){
+                loanAccount.status = "PAID"
+                refund = Number(transaction.transactedAmount) - Number(loanAccount!.balance) 
+                loanBalance = 0
+            }else if(loanBalance == 0){
                 loanAccount.status = "PAID"
             }
 
-            const result = await createLoanTransaction(loanAccount, transaction, loanBalance, account!.id, receipt.toString())
-            const { to, subject, text } = {
-                to: result!.email,
-                subject: "BMS Account Transaction",
-                text: `Loan Payment of GH¢ ${transaction.transactedAmount} has been paid to loan number: ${result.account}. Loan balance left is GH¢ ${result.balance}.
-                Thank you for banking with us.`
-            }
+            console.log(loanAccount.status);
+            
 
-            const mailOptions = {
-                from: process.env.EMAIL_SENDER,
-                to,
-                subject,
-                text,
-            };
-        
-            // await transporter.sendMail(mailOptions);
-            res.send({result, message: `Transaction successful with receipt ${receipt}`})
+            const result = await createLoanTransaction(loanAccount, transaction, loanBalance, account!.id, receipt.toString())
+            
+            if(refund > 0){
+                const { to, subject, text } = {
+                    to: result!.email,
+                    subject: "BMS Account Transaction",
+                    text: `Loan Payment of GH¢ ${transaction.transactedAmount} has been paid to loan number: ${result.account}. Loan balance left is GH¢ ${result.balance}. You will be refunded GH¢ ${refund}.
+                    Thank you for banking with us.`
+                }
+    
+                const mailOptions = {
+                    from: process.env.EMAIL_SENDER,
+                    to,
+                    subject,
+                    text,
+                };
+                // await transporter.sendMail(mailOptions);
+                res.send({result, message: `Transaction successful with receipt ${receipt}`})
+            }else{
+                const { to, subject, text } = {
+                    to: result!.email,
+                    subject: "BMS Account Transaction",
+                    text: `Loan Payment of GH¢ ${transaction.transactedAmount} has been paid to loan number: ${result.account}. Loan balance left is GH¢ ${result.balance}.
+                    Thank you for banking with us.`
+                }
+    
+                const mailOptions = {
+                    from: process.env.EMAIL_SENDER,
+                    to,
+                    subject,
+                    text,
+                };
+                // await transporter.sendMail(mailOptions);
+                res.send({result, message: `Transaction successful with receipt ${receipt}`})
+            }
 
         }else{
             const savingAccount = await getAccountByAccountNumber(transaction.accountNumber)
@@ -124,7 +151,6 @@ router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
                     )
                 }
             }
-            
 
             const result = await createSavingTransaction(savingAccount, transaction, savingBalance, account!.id, receipt.toString())
             
@@ -142,7 +168,7 @@ router.post("/transactions", authenticateToken, async (req:AuthRequest,res) => {
                 text,
             };
         
-            await transporter.sendMail(mailOptions);
+            // await transporter.sendMail(mailOptions);
 
             res.send({result, message: `Transaction successful with receipt ${receipt}`})
         }

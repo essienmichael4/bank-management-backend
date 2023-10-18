@@ -1,18 +1,9 @@
 import { Router } from "express";
 import  jwt  from "jsonwebtoken";
-import dotenv from 'dotenv'
 import bcrypt from 'bcrypt'
-
 import { findUserByEmail, findUserByUsername } from "../controllers/userController";
 
-
 const router = Router()
-dotenv.config()
-
-router.get("/auth", (req, res)=>{
-    
-    // res.status(401).json({error: "Not Implemented"})
-})
 
 router.post("/auth/login",  async (req, res)=>{
     const {email, password} = req.body
@@ -24,6 +15,10 @@ router.post("/auth/login",  async (req, res)=>{
 
     if(!user){
         return res.status(401).json({error: "User does not exist"})
+    }
+
+    if(user.status == "DISABLED"){
+        return res.status(401).json({error: "User account does not have permission to login anymore. If there is a problem, contact a Manager."})
     }
 
     const passVerify = await bcrypt.compare(password, user.password)

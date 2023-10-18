@@ -49,6 +49,7 @@ export const createLoanTransaction = (loanAccount:Loan, transaction:TransactionR
         where:{account: transaction.accountNumber},
         data:{
             balance: loanBalance,
+            status: loanAccount.status,
             transactions: {
                 create: {
                     amount: Number(transaction.transactedAmount),

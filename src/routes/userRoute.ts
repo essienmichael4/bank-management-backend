@@ -83,15 +83,11 @@ router.post("/user/change-password", authenticateToken, async (req:AuthRequest,r
         const tokenAccount = req.tokenAccount
         let isAdmin = false
 
-        console.log(req.body);
-        console.log(tokenAccount);
-        
-
         const dbUser = await findUserById(Number(user.id))
 
         if(!dbUser){
             return res.status(400).json({error: "User does not exist"})
-        }
+        }        
 
         if(dbUser.id != tokenAccount!.id){
             isAdmin = true
@@ -108,11 +104,10 @@ router.post("/user/change-password", authenticateToken, async (req:AuthRequest,r
             return res.status(401).json({error: "Please enter you account's password"})
         }
 
-        if(isAdmin){
-            const adminUser = await findUserById(Number(user.id))
-            const passVerify = await bcrypt.compare(user.previousPassword, adminUser!.password)
-            if(!passVerify){
-                return res.status(401).json({error: "Password does not match the accounts password"})
+        if(isAdmin){            
+            const passVerify = await bcrypt.compare(user.previousPassword, tokenAccount!.password)
+            if(!passVerify){                
+                return res.status(401).json({error: "Password does not match the Admin accounts password"})
             }
             if(user.password != user.repeatPassword){
                 return res.status(401).json({error: "The passwords do not match"})
@@ -133,7 +128,7 @@ router.post("/user/change-password", authenticateToken, async (req:AuthRequest,r
         const result = await updatePassword(user.id!, hashPassword)
         res.send({message: "Password updated successfully"})
     }catch(e){
-        res.status(400).json({error: "e.error"})
+        res.status(400).json({error: "Server Error, Try again"})
     }
 })
 
